@@ -1,7 +1,5 @@
-'use strict';
-
 angular.module('gitCloneApp')
-.controller('mainCtrl', function($scope){
+.controller('mainCtrl', function($scope, $http){
     let scope = $scope;
 
     scope.helloWorld = function() {
@@ -9,63 +7,109 @@ angular.module('gitCloneApp')
     }
 
     scope.init = function() {
+        // $http({
+        //     url: 'https://https://clone-chart.herokuapp.com/api/v1/clone_count',
+        //     method: 'GET'
+        // }).then(data => {
+        //     scope.generateLineGraph(data);
+        // });
+
         scope.generateLineGraph();
     }
 
     scope.generateLineGraph = function() {
-        // this is an example
-        console.log('hello world');
-        // set the dimensions and margins of the graph
-        var margin = {top: 10, right: 30, bottom: 30, left: 60},
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
 
-        // append the svg object to the body of the page
-        var svg = d3.select("#my_dataviz")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
+        var lineData = [];
+
+        lineData.push({date:new Date(2019, 01, 04), nps:89});
+        lineData.push({date:new Date(2019, 01, 11), nps:96});
+        lineData.push({date:new Date(2019, 01, 18), nps:87});
+        lineData.push({date:new Date(2019, 01, 25), nps:99});
+        lineData.push({date:new Date(2019, 02, 04), nps:83});
+        lineData.push({date:new Date(2019, 02, 11), nps:93});
+        lineData.push({date:new Date(2019, 02, 18), nps:79});
+        lineData.push({date:new Date(2019, 02, 25), nps:94});
+        lineData.push({date:new Date(2019, 03, 4), nps:89});
+        lineData.push({date:new Date(2019, 03, 11), nps:93});
+        lineData.push({date:new Date(2019, 03, 18), nps:81});
+
+
+        lineData.sort(function(a,b){
+            return new Date(b.date) - new Date(a.date);
+        });
+
+        var height  = 200;
+        var width   = 700;
+        var hEach   = 40;
+
+        var margin = {top: 20, right: 15, bottom: 25, left: 25};
+
+        width =     width - margin.left - margin.right;
+        height =    height - margin.top - margin.bottom;
+
+        var svg = d3.select('#data').append("svg")
+        .attr("width",  width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        //Read the data
-        d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
+        // set the ranges
+        var x = d3.scaleTime().range([0, width]);
 
-        // When reading the csv, I must format variables:
-        function(d){
-        return { date : d3.timeParse("%Y-%m-%d")(d.date), value : d.value }
-        },
+        x.domain(d3.extent(lineData, function(d) { return d.date; }));
 
-        // Now I can use this dataset:
-        function(data) {
 
-        // Add X axis --> it is a date format
-        var x = d3.scaleTime()
-        .domain(d3.extent(data, function(d) { return d.date; }))
-        .range([ 0, width ]);
-        svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        var y = d3.scaleLinear().range([height, 0]);
 
-        // Add Y axis
-        var y = d3.scaleLinear()
-        .domain([0, d3.max(data, function(d) { return +d.value; })])
-        .range([ height, 0 ]);
-        svg.append("g")
-        .call(d3.axisLeft(y));
 
-        // Add the line
+        y.domain([d3.min(lineData, function(d) { return d.nps; }) - 5, 100]);
+
+        var valueline = d3.line()
+                .x(function(d) { return x(d.date); })
+                .y(function(d) { return y(d.nps);  })
+                .curve(d3.curveMonotoneX);
+
         svg.append("path")
-        .datum(data)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1.5)
-        .attr("d", d3.line()
-            .x(function(d) { return x(d.date) })
-            .y(function(d) { return y(d.value) })
-            )
-        })
+            .data([lineData])
+            .attr("class", "line")
+            .attr("d", valueline);
+
+        //  var xAxis_woy = d3.axisBottom(x).tickFormat(d3.timeFormat("Week %V"));
+        var xAxis_woy = d3.axisBottom(x).ticks(11).tickFormat(d3.timeFormat("%y-%b-%d")).tickValues(lineData.map(d=>d.date));
+
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis_woy);
+
+        //  Add the Y Axis
+        //  svg.append("g").call(d3.axisLeft(y));
+
+        svg.selectAll(".dot")
+            .data(lineData)
+            .enter()
+            .append("circle") // Uses the enter().append() method
+            .attr("class", "dot") // Assign a class for styling
+            .attr("cx", function(d) { return x(d.date) })
+            .attr("cy", function(d) { return y(d.nps) })
+            .attr("r", 5);
+
+
+        svg.selectAll(".text")
+            .data(lineData)
+            .enter()
+            .append("text") // Uses the enter().append() method
+            .attr("class", "label") // Assign a class for styling
+            .attr("x", function(d, i) { return x(d.date) })
+            .attr("y", function(d) { return y(d.nps) })
+            .attr("dy", "-5")
+            .text(function(d) {return d.nps; });
+
+        svg.append('text')
+            .attr('x', 10)
+            .attr('y', -5)
+
+
     }
 
     scope.init();
