@@ -1,0 +1,6 @@
+CLONE CHART -- TODO LIST
+- A simplified replica of github's clone graph
+
+[]: Build View
+
+[]: Build API
