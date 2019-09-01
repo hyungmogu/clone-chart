@@ -2,28 +2,35 @@ angular.module('gitCloneApp')
 .controller('mainCtrl', function($scope, $http){
     let scope = $scope;
 
-    $scope.countTotal = 0;
+    scope.countTotal = 0;
 
-    scope.addCount = function() {
-        $http({
-            url: '/api/v1/add-count/',
-            method: 'PUT'
-        }).then(data => {
+    scope.init = function() {
+        scope.getGraph().then(res => {
+            scope.countTotal = res.data.length;
+            let data = scope.convertDateToObject(res.data);
             scope.generateLineGraph(data);
         }, err => {
             console.error(err);
         });
     }
 
-    scope.init = function() {
-        $http({
+    scope.getGraph = function() {
+        return $http({
             url: '/api/v1/get-count/',
             method: 'GET'
-        }).then(res => {
-            let data = scope.convertDateToObject(res.data);
+        })
+    }
 
-            scope.countTotal = data.length;
-            scope.generateLineGraph(data);
+    scope.addCount = function() {
+        $http({
+            url: '/api/v1/add-count/',
+            method: 'POST'
+        }).then(_ => {
+            scope.getGraph().then(res => {
+                scope.countTotal = res.data.length;
+                let data = scope.convertDateToObject(res.data);
+                scope.updateLineGraph(data);
+            });
         }, err => {
             console.error(err);
         });
@@ -41,10 +48,41 @@ angular.module('gitCloneApp')
             let date = parseInt(parsedDate[2]);
 
             // create date object
-            item.date = Date(year, month, date);
+            item.date = new Date(year, month, date);
+
+            output.push(item);
         }
 
+        console.log(output);
+
         return output;
+    }
+
+
+    scope.updateLineGraph = function(lineData) {
+        var height  = 200;
+        var width   = 700;
+
+        var valueline = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.count);  })
+            .curve(d3.curveMonotoneX);
+
+        var x = d3.scaleTime().range([0, width]);
+        var y = d3.scaleLinear().range([height, 0]);
+
+        x.domain(d3.extent(lineData, function(d) { return d.date; }));
+        y.domain([d3.min(lineData, function(d) { return d.count; }) - 5, 100]);
+
+        let svg = d3.select("#data").transition();
+        let xAxis_woy = d3.axisBottom(x).ticks(11).tickFormat(d3.timeFormat("%y-%b-%d")).tickValues(lineData.map(d=>d.date));
+
+        svg.select(".line")   // change the line
+            .duration(750)
+            .attr("d", valueline(data));
+        svg.select(".x.axis") // change the x axis
+            .duration(750)
+            .call(xAxis_woy);
     }
 
     scope.generateLineGraph = function(lineData) {
