@@ -1,15 +1,17 @@
 {% extends 'layout.html' %}
 
 {% block body_content %}
-  <div>
-    <h2>Git Clone Count Graph</h2>
-    <div id="data"></div>
+    {% verbatim %}
     <div>
-        <h2>{{ countTotal }}</h2>
-        <p>Clone count</p>
+        <h2>Git Clone Count Graph</h2>
+        <div id="data"></div>
+        <div>
+            <h2>{{ countTotal }}</h2>
+            <p>Clone count</p>
+        </div>
+        <div style="display: flex">
+            <button class="btn btn-primary" ng-click="addCount()">Add count</button>
+        </div>
     </div>
-    <div style="display: flex">
-        <button class="btn btn-primary" ng-click="addCount()">Add count</button>
-    </div>
-  </div>
+    {% endverbatim %}
 {% endblock %}
