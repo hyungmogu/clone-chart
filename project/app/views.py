@@ -40,16 +40,17 @@ class POSTCloneView(CreateAPIView):
 
     def perform_create(self, serializer):
         # find date today
-        today = timezone.now().today()
+        today = timezone.now().date()
+
+        print(today)
 
         # get value today. if it doesn't exist, then create one
         try:
             clone = self.model.objects.get(date=today)
-            serializer = self.serializer_class(clone, data={'count': clone.count + 1}, partial=True)
         except self.model.DoesNotExist:
             clone = self.model.objects.create(date=today)
 
-        serializer = self.serializer_class(clone, data={'count': 1}, partial=True)
+        serializer = self.serializer_class(clone, data={'count': clone.count + 1}, partial=True)
 
         if not serializer.is_valid():
             raise NotAcceptable('An error occurred while trying to save/update clone count! Contact Moe for fix')
