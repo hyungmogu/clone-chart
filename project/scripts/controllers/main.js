@@ -2,37 +2,60 @@ angular.module('gitCloneApp')
 .controller('mainCtrl', function($scope, $http){
     let scope = $scope;
 
-    scope.helloWorld = function() {
-        console.log('hello world');
+    scope.addCount = function() {
+        alert('Hello World!');
+
+        $http({
+            url: 'https://clone-chart.herokuapp.com/api/v1/add-count',
+            method: 'POST'
+        }).then(data => {
+            scope.generateLineGraph(data);
+        });
     }
 
     scope.init = function() {
-        // $http({
-        //     url: 'https://https://clone-chart.herokuapp.com/api/v1/clone_count',
-        //     method: 'GET'
-        // }).then(data => {
-        //     scope.generateLineGraph(data);
-        // });
-
-        scope.generateLineGraph();
+        $http({
+            url: 'https://clone-chart.herokuapp.com/api/v1/get-count',
+            method: 'GET'
+        }).then(res => {
+            let data = scope.convertDateToObject(res.data);
+            scope.generateLineGraph(data);
+        });
+        scope.generateLineGraph(data);
     }
 
-    scope.generateLineGraph = function() {
+    scope.convertDateToObject = function (data) {
+        let output = [];
 
+        for (item of data) {
+            // parse date
+            let parsedDate = item.date.split('-');
+
+            let year = parseInt(parsedDate[0]);
+            let month = parseInt(parsedDate[1]);
+            let date = parseInt(parsedDate[2]);
+
+            // create date object
+            item.date = Date(year, month, date);
+        }
+
+        return output;
+    }
+
+    scope.generateLineGraph = function(data) {
         var lineData = [];
 
-        lineData.push({date:new Date(2019, 01, 04), nps:89});
-        lineData.push({date:new Date(2019, 01, 11), nps:96});
-        lineData.push({date:new Date(2019, 01, 18), nps:87});
-        lineData.push({date:new Date(2019, 01, 25), nps:99});
-        lineData.push({date:new Date(2019, 02, 04), nps:83});
-        lineData.push({date:new Date(2019, 02, 11), nps:93});
-        lineData.push({date:new Date(2019, 02, 18), nps:79});
-        lineData.push({date:new Date(2019, 02, 25), nps:94});
-        lineData.push({date:new Date(2019, 03, 4), nps:89});
-        lineData.push({date:new Date(2019, 03, 11), nps:93});
-        lineData.push({date:new Date(2019, 03, 18), nps:81});
-
+        lineData.push({date:new Date(2019, 01, 04), count:89});
+        lineData.push({date:new Date(2019, 01, 11), count:96});
+        lineData.push({date:new Date(2019, 01, 18), count:87});
+        lineData.push({date:new Date(2019, 01, 25), count:99});
+        lineData.push({date:new Date(2019, 02, 04), count:83});
+        lineData.push({date:new Date(2019, 02, 11), count:93});
+        lineData.push({date:new Date(2019, 02, 18), count:79});
+        lineData.push({date:new Date(2019, 02, 25), count:94});
+        lineData.push({date:new Date(2019, 03, 4), count:89});
+        lineData.push({date:new Date(2019, 03, 11), count:93});
+        lineData.push({date:new Date(2019, 03, 18), count:81});
 
         lineData.sort(function(a,b){
             return new Date(b.date) - new Date(a.date);
@@ -62,11 +85,11 @@ angular.module('gitCloneApp')
         var y = d3.scaleLinear().range([height, 0]);
 
 
-        y.domain([d3.min(lineData, function(d) { return d.nps; }) - 5, 100]);
+        y.domain([d3.min(lineData, function(d) { return d.count; }) - 5, 100]);
 
         var valueline = d3.line()
                 .x(function(d) { return x(d.date); })
-                .y(function(d) { return y(d.nps);  })
+                .y(function(d) { return y(d.count);  })
                 .curve(d3.curveMonotoneX);
 
         svg.append("path")
@@ -91,7 +114,7 @@ angular.module('gitCloneApp')
             .append("circle") // Uses the enter().append() method
             .attr("class", "dot") // Assign a class for styling
             .attr("cx", function(d) { return x(d.date) })
-            .attr("cy", function(d) { return y(d.nps) })
+            .attr("cy", function(d) { return y(d.count) })
             .attr("r", 5);
 
 
@@ -101,9 +124,9 @@ angular.module('gitCloneApp')
             .append("text") // Uses the enter().append() method
             .attr("class", "label") // Assign a class for styling
             .attr("x", function(d, i) { return x(d.date) })
-            .attr("y", function(d) { return y(d.nps) })
+            .attr("y", function(d) { return y(d.count) })
             .attr("dy", "-5")
-            .text(function(d) {return d.nps; });
+            .text(function(d) {return d.count; });
 
         svg.append('text')
             .attr('x', 10)
