@@ -1,10 +1,126 @@
-'use strict';
-
 angular.module('gitCloneApp')
-.controller('mainCtrl', function($scope){
+.controller('mainCtrl', function($scope, $http){
     let scope = $scope;
 
-    scope.helloWorld = function() {
-        console.log('hello world');
+    $scope.countTotal = 0;
+
+    scope.addCount = function() {
+        $http({
+            url: '/api/v1/add-count/',
+            method: 'PUT'
+        }).then(data => {
+            scope.generateLineGraph(data);
+        }, err => {
+            console.error(err);
+        });
     }
+
+    scope.init = function() {
+        $http({
+            url: '/api/v1/get-count/',
+            method: 'GET'
+        }).then(res => {
+            let data = scope.convertDateToObject(res.data);
+
+            scope.countTotal = data.length;
+            scope.generateLineGraph(data);
+        }, err => {
+            console.error(err);
+        });
+    }
+
+    scope.convertDateToObject = function (data) {
+        let output = [];
+
+        for (item of data) {
+            // parse date
+            let parsedDate = item.date.split('-');
+
+            let year = parseInt(parsedDate[0]);
+            let month = parseInt(parsedDate[1]);
+            let date = parseInt(parsedDate[2]);
+
+            // create date object
+            item.date = Date(year, month, date);
+        }
+
+        return output;
+    }
+
+    scope.generateLineGraph = function(lineData) {
+        lineData.sort(function(a,b){
+            return new Date(b.date) - new Date(a.date);
+        });
+
+        var height  = 200;
+        var width   = 700;
+        var hEach   = 40;
+
+        var margin = {top: 20, right: 15, bottom: 25, left: 25};
+
+        width =     width - margin.left - margin.right;
+        height =    height - margin.top - margin.bottom;
+
+        var svg = d3.select('#data').append("svg")
+        .attr("width",  width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // set the ranges
+        var x = d3.scaleTime().range([0, width]);
+
+        x.domain(d3.extent(lineData, function(d) { return d.date; }));
+
+
+        var y = d3.scaleLinear().range([height, 0]);
+
+
+        y.domain([d3.min(lineData, function(d) { return d.count; }) - 5, 100]);
+
+        var valueline = d3.line()
+                .x(function(d) { return x(d.date); })
+                .y(function(d) { return y(d.count);  })
+                .curve(d3.curveMonotoneX);
+
+        svg.append("path")
+            .data([lineData])
+            .attr("class", "line")
+            .attr("d", valueline);
+
+        var xAxis_woy = d3.axisBottom(x).ticks(11).tickFormat(d3.timeFormat("%y-%b-%d")).tickValues(lineData.map(d=>d.date));
+
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis_woy);
+
+        svg.selectAll(".dot")
+            .data(lineData)
+            .enter()
+            .append("circle")
+            .attr("class", "dot")
+            .attr("cx", function(d) { return x(d.date) })
+            .attr("cy", function(d) { return y(d.count) })
+            .attr("r", 5);
+
+
+        svg.selectAll(".text")
+            .data(lineData)
+            .enter()
+            .append("text")
+            .attr("class", "label")
+            .attr("x", function(d, i) { return x(d.date) })
+            .attr("y", function(d) { return y(d.count) })
+            .attr("dy", "-5")
+            .text(function(d) {return d.count; });
+
+        svg.append('text')
+            .attr('x', 10)
+            .attr('y', -5)
+
+
+    }
+
+    scope.init();
 })
