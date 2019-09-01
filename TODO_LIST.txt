@@ -4,3 +4,12 @@ CLONE CHART -- TODO LIST
 []: Build View
 
 []: Build API
+
+
+
+==============================
+
+SEPTEMBER 1st, 2019
+    GOAL:
+        [x]: Fix 'rest_framework' not found error for heroku
+        []: Fix 'django.db.utils.OperationalError: no such table: app_clone' error for heroku
