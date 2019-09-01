@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.views.generic import TemplateView
 from rest_framework import permissions, status
+from rest_framework.exceptions import NotAcceptable
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 
 from . import models, serializers
@@ -32,14 +33,26 @@ class GETCloneView(ListAPIView):
                     Q(date__gte=seven_days_from_now))
 
 
-# class POSTCloneView(UpdateAPIView):
-#     permission_classes = (permissions.AllowAny,)
-#     model = get_user_model()
-#     serializer_class = serializers.UserSerializer
+class POSTCloneView(CreateAPIView):
+    model = models.Clone
+    queryset = models.Clone.objects.all()
+    serializer_class = serializers.CloneSerializer
 
-#     def perform_create(self, serializer):
-#         user = serializer.save()
+    def perform_create(self, serializer):
+        # find date today
+        today = timezone.now().today()
 
-#         dogs = models.Dog.objects.all()
-#         models.UserDog.objects.bulk_create([
-#             models.UserDog(user=user, dog=dog) for dog in dogs])
+        # get value today. if it doesn't exist, then create one
+        try:
+            clone = self.model.objects.get(date=today)
+            serializer = self.serializer_class(clone, data={'count': clone.count + 1}, partial=True)
+        except self.model.DoesNotExist:
+            clone = self.model.objects.create(date=today)
+
+        serializer = self.serializer_class(clone, data={'count': 1}, partial=True)
+
+        if not serializer.is_valid():
+            raise NotAcceptable('An error occurred while trying to save/update clone count! Contact Moe for fix')
+
+        serializer.save()
+
