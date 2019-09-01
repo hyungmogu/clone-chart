@@ -97,7 +97,6 @@ angular.module('gitCloneApp')
             .attr("class", "line")
             .attr("d", valueline);
 
-        //  var xAxis_woy = d3.axisBottom(x).tickFormat(d3.timeFormat("Week %V"));
         var xAxis_woy = d3.axisBottom(x).ticks(11).tickFormat(d3.timeFormat("%y-%b-%d")).tickValues(lineData.map(d=>d.date));
 
         svg.append("g")
@@ -105,14 +104,11 @@ angular.module('gitCloneApp')
                 .attr("transform", "translate(0," + height + ")")
                 .call(xAxis_woy);
 
-        //  Add the Y Axis
-        //  svg.append("g").call(d3.axisLeft(y));
-
         svg.selectAll(".dot")
             .data(lineData)
             .enter()
-            .append("circle") // Uses the enter().append() method
-            .attr("class", "dot") // Assign a class for styling
+            .append("circle")
+            .attr("class", "dot")
             .attr("cx", function(d) { return x(d.date) })
             .attr("cy", function(d) { return y(d.count) })
             .attr("r", 5);
@@ -121,8 +117,8 @@ angular.module('gitCloneApp')
         svg.selectAll(".text")
             .data(lineData)
             .enter()
-            .append("text") // Uses the enter().append() method
-            .attr("class", "label") // Assign a class for styling
+            .append("text")
+            .attr("class", "label")
             .attr("x", function(d, i) { return x(d.date) })
             .attr("y", function(d) { return y(d.count) })
             .attr("dy", "-5")
