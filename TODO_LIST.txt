@@ -9,7 +9,14 @@ CLONE CHART -- TODO LIST
 
 ==============================
 
-SEPTEMBER 1st, 2019
+SEPTEMBER 1st, 2019 (part2)
+    GOAL:
+        []: Fix Erroneous date
+        []: Pre-fill x-axis with 2 weeks time period
+
+==============================
+
+SEPTEMBER 1st, 2019 (part1)
     GOAL:
         [x]: Fix 'rest_framework' not found error for heroku
-        []: Fix 'django.db.utils.OperationalError: no such table: app_clone' error for heroku
+        [x]: Fix 'django.db.utils.OperationalError: no such table: app_clone' error for heroku
