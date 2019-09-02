@@ -4,8 +4,9 @@ from __future__ import unicode_literals
 from django.utils import timezone
 from django.db import models
 
+
 class Clone(models.Model):
-    date = models.DateField(default=timezone.now, unique=True)
+    date = models.DateTimeField(default=timezone.now().today, unique=True)
     count = models.IntegerField(default=0)
 
     def __str__(self):

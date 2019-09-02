@@ -27,6 +27,8 @@ class GETCloneView(ListAPIView):
         # if items count is less than 14, check items
         clones = self.get_clones()
 
+        print (clones)
+
         if len(clones) < 14:
             self.init_clones(clones)
             clones = self.get_clones()
@@ -51,7 +53,7 @@ class GETCloneView(ListAPIView):
         # check and see if date exists in array
         # if not, put in output
         for i in range(0,14):
-            date = timezone.now().today() - timezone.timedelta(days=i)
+            date = timezone.now().date() - timezone.timedelta(days=i)
 
             # if clone is not empty, then go through the following process
             if len(clones) != 0:

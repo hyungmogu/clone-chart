@@ -6,5 +6,7 @@ from . import models
 
 
 class CloneSerializer(serializers.ModelSerializer):
+    date = serializers.DateTimeField(format="%s", required=False)
+
     class Meta:
         model = models.Clone

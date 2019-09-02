@@ -50,15 +50,8 @@ angular.module('gitCloneApp')
         let output = [];
 
         for (item of data) {
-            // parse date
-            let parsedDate = item.date.split('-');
-
-            let year = parseInt(parsedDate[0]);
-            let month = parseInt(parsedDate[1]);
-            let date = parseInt(parsedDate[2]);
-
             // create date object
-            item.date = new Date(year, month, date);
+            item.date = new Date(parseInt(item.date)*1000);
 
             output.push(item);
         }
