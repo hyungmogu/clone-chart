@@ -49,14 +49,15 @@ angular.module('gitCloneApp')
     scope.convertDateToObject = function (data) {
         let output = [];
 
+        console.log(data);
+
         for (item of data) {
             // create date object
+            console.log(item.date);
             item.date = new Date(parseInt(item.date)*1000);
 
             output.push(item);
         }
-
-        console.log(output);
 
         return output;
     }
@@ -159,8 +160,6 @@ angular.module('gitCloneApp')
         svg.append('text')
             .attr('x', 10)
             .attr('y', -5)
-
-
     }
 
     scope.init();

@@ -24,10 +24,7 @@ class GETCloneView(ListAPIView):
         """
         This view returns all clone counts between two weeks
         """
-        # if items count is less than 14, check items
         clones = self.get_clones()
-
-        print (clones)
 
         if len(clones) < 14:
             self.init_clones(clones)
@@ -38,10 +35,12 @@ class GETCloneView(ListAPIView):
     def get_clones(self):
         fourteen_days =  timezone.timedelta(days=14)
 
-        fourteen_days_ago = timezone.now().today() - fourteen_days
+        date_upper_bound = timezone.now().date() + timezone.timedelta(days=1)
+
+        fourteen_days_ago = date_upper_bound - fourteen_days
 
         clones = models.Clone.objects.filter(
-            Q(date__lte=timezone.now().today())&
+            Q(date__lte=date_upper_bound)&
             Q(date__gte=fourteen_days_ago))
 
         return clones
@@ -49,26 +48,20 @@ class GETCloneView(ListAPIView):
     def init_clones(self, clones):
         dates = []
         temp_set = set()
+        temp_clone_dates = [str(clone.date.date()) for clone in clones]
 
         # check and see if date exists in array
         # if not, put in output
         for i in range(0,14):
-            date = timezone.now().date() - timezone.timedelta(days=i)
+            date_upper_bound = timezone.now().date() + timezone.timedelta(days=1)
+            date = date_upper_bound - timezone.timedelta(days=i)
 
             # if clone is not empty, then go through the following process
-            if len(clones) != 0:
-                for clone in clones:
-                    clone_date = datetime.combine(clone.date, datetime.min.time())
-
-                    if str(clone_date) in temp_set:
-                        continue
-
-                    if (clone_date - date).days > 0:
-                        new_clone = self.model(date=date)
-                        dates.append(new_clone)
-
-                    temp_set.add(str(clone_date))
-                    break
+            if len(temp_clone_dates) != 0:
+                # if date not in clone, then add
+                if str(date) not in temp_clone_dates:
+                    new_clone = self.model(date=date)
+                    dates.append(new_clone)
 
             # if clone is empty, then add
             else:
