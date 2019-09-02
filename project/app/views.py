@@ -48,8 +48,6 @@ class GETCloneView(ListAPIView):
         dates = []
         temp_set = set()
 
-        print(clones)
-
         # check and see if date exists in array
         # if not, put in output
         for i in range(0,14):
@@ -71,7 +69,8 @@ class GETCloneView(ListAPIView):
                     break
 
             # if clone is empty, then add
-            dates.append(self.model(date=date))
+            else:
+                dates.append(self.model(date=date))
 
         self.model.objects.bulk_create(dates)
 
