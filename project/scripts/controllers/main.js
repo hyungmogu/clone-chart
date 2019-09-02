@@ -27,13 +27,23 @@ angular.module('gitCloneApp')
             method: 'POST'
         }).then(_ => {
             scope.getGraph().then(res => {
-                scope.countTotal = res.data.length;
+                scope.countTotal = scope.getCountTotal(res.data);
                 let data = scope.convertDateToObject(res.data);
                 scope.updateLineGraph(data);
             });
         }, err => {
             console.error(err);
         });
+    }
+
+    scope.getCountTotal = function(data) {
+        let output = 0;
+
+        for (item of data) {
+            output += parseInt(item.count);
+        }
+
+        return output;
     }
 
     scope.convertDateToObject = function (data) {
