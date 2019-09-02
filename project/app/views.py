@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db.models import Q
-from django.utils import timezone
+from django.utils import timezone,formats
 from datetime import datetime
 from django.views.generic import TemplateView
 from rest_framework import permissions, status
@@ -76,12 +76,18 @@ class POSTCloneView(CreateAPIView):
     serializer_class = serializers.CloneSerializer
 
     def perform_create(self, serializer):
-        today = timezone.now().date()
+        today_with_time = timezone.now().today()
+
+        today_year = today_with_time.year
+        today_month = today_with_time.month
+        today_day = today_with_time.day
+
+        today_without_time = datetime(today_year, today_month, today_day)
 
         try:
-            clone = self.model.objects.get(date=today)
+            clone = self.model.objects.get(date=today_without_time)
         except self.model.DoesNotExist:
-            clone = self.model.objects.create(date=today)
+            clone = self.model.objects.create(date=today_without_time)
 
         serializer = self.serializer_class(clone, data={'count': clone.count + 1}, partial=True)
 
