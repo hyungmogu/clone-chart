@@ -33,9 +33,11 @@ class GETCloneView(ListAPIView):
         return clones
 
     def get_clones(self):
+        today = self.get_date()
+
         fourteen_days =  timezone.timedelta(days=14)
 
-        date_upper_bound = timezone.now().date() + timezone.timedelta(days=1)
+        date_upper_bound = today + timezone.timedelta(days=1)
 
         fourteen_days_ago = date_upper_bound - fourteen_days
 
@@ -69,6 +71,15 @@ class GETCloneView(ListAPIView):
 
         self.model.objects.bulk_create(dates)
 
+    def get_date(self):
+        today_with_time = timezone.now().today()
+
+        today_year = today_with_time.year
+        today_month = today_with_time.month
+        today_day = today_with_time.day
+
+        return datetime(today_year, today_month, today_day)
+
 
 class POSTCloneView(CreateAPIView):
     model = models.Clone
@@ -76,18 +87,12 @@ class POSTCloneView(CreateAPIView):
     serializer_class = serializers.CloneSerializer
 
     def perform_create(self, serializer):
-        today_with_time = timezone.now().today()
-
-        today_year = today_with_time.year
-        today_month = today_with_time.month
-        today_day = today_with_time.day
-
-        today_without_time = datetime(today_year, today_month, today_day)
+        today = self.get_date()
 
         try:
-            clone = self.model.objects.get(date=today_without_time)
+            clone = self.model.objects.get(date=today)
         except self.model.DoesNotExist:
-            clone = self.model.objects.create(date=today_without_time)
+            clone = self.model.objects.create(date=today)
 
         serializer = self.serializer_class(clone, data={'count': clone.count + 1}, partial=True)
 
@@ -96,3 +101,12 @@ class POSTCloneView(CreateAPIView):
 
         serializer.save()
 
+
+    def get_date(self):
+        today_with_time = timezone.now().today()
+
+        today_year = today_with_time.year
+        today_month = today_with_time.month
+        today_day = today_with_time.day
+
+        return datetime(today_year, today_month, today_day)
