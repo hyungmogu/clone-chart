@@ -5,14 +5,20 @@ CLONE CHART -- TODO LIST
 
 []: Build API
 
+==============================
 
+SEPTEMBER 2nd, 2019
+    GOAL:
+        []: Fix Erroneous date
+        []: Add tests to the following endpoints
+            []: '/api/v1/get-counts/'
+            []: '/api/v1/add-counts/'
 
 ==============================
 
 SEPTEMBER 1st, 2019 (part2)
     GOAL:
-        []: Fix Erroneous date
-        []: Pre-fill x-axis with 2 weeks time period
+        [x]: Pre-fill x-axis with 2 weeks time period
 
 ==============================
 
