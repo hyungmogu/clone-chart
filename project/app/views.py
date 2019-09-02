@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db.models import Q
 from django.utils import timezone
+from datetime import datetime
 from django.views.generic import TemplateView
 from rest_framework import permissions, status
 from rest_framework.exceptions import NotAcceptable
@@ -20,17 +21,59 @@ class GETCloneView(ListAPIView):
     serializer_class = serializers.CloneSerializer
 
     def get_queryset(self):
-            """
-            This view returns all clone counts between two weeks
-            """
-            seven_days =  timezone.timedelta(days=7)
+        """
+        This view returns all clone counts between two weeks
+        """
+        # if items count is less than 14, check items
+        clones = self.get_clones()
 
-            seven_days_ago = timezone.now() + seven_days
-            seven_days_from_now = timezone.now() - seven_days
+        if len(clones) < 14:
+            self.init_clones(clones)
+            clones = self.get_clones()
 
-            return models.Clone.objects.filter(
-                    Q(date__lte=seven_days_ago)&
-                    Q(date__gte=seven_days_from_now))
+        return clones
+
+    def get_clones(self):
+        fourteen_days =  timezone.timedelta(days=14)
+
+        fourteen_days_ago = timezone.now().today() - fourteen_days
+
+        clones = models.Clone.objects.filter(
+            Q(date__lte=timezone.now().today())&
+            Q(date__gte=fourteen_days_ago))
+
+        return clones
+
+    def init_clones(self, clones):
+        dates = []
+        temp_set = set()
+
+        print(clones)
+
+        # check and see if date exists in array
+        # if not, put in output
+        for i in range(0,14):
+            date = timezone.now().today() - timezone.timedelta(days=i)
+
+            # if clone is not empty, then go through the following process
+            if len(clones) != 0:
+                for clone in clones:
+                    clone_date = datetime.combine(clone.date, datetime.min.time())
+
+                    if str(clone_date) in temp_set:
+                        continue
+
+                    if (clone_date - date).days > 0:
+                        new_clone = self.model(date=date)
+                        dates.append(new_clone)
+
+                    temp_set.add(str(clone_date))
+                    break
+
+            # if clone is empty, then add
+            dates.append(self.model(date=date))
+
+        self.model.objects.bulk_create(dates)
 
 
 class POSTCloneView(CreateAPIView):
@@ -39,12 +82,8 @@ class POSTCloneView(CreateAPIView):
     serializer_class = serializers.CloneSerializer
 
     def perform_create(self, serializer):
-        # find date today
         today = timezone.now().date()
 
-        print(today)
-
-        # get value today. if it doesn't exist, then create one
         try:
             clone = self.model.objects.get(date=today)
         except self.model.DoesNotExist:

@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db import models
 
 class Clone(models.Model):
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=timezone.now, unique=True)
     count = models.IntegerField(default=0)
 
     def __str__(self):
