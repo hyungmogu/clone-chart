@@ -6,7 +6,7 @@ angular.module('gitCloneApp')
 
     scope.init = function() {
         scope.getGraph().then(res => {
-            console.log(res.data);
+
             scope.countTotal = scope.getCountTotal(res.data);
             let data = scope.convertDateToObject(res.data);
             scope.generateLineGraph(data);
@@ -71,7 +71,7 @@ angular.module('gitCloneApp')
         width =     width - margin.left - margin.right;
         height =    height - margin.top - margin.bottom;
 
-        lineData.sort(function(a,b){
+        lineData = lineData.sort(function(a,b){
             return new Date(b.date) - new Date(a.date);
         });
 
@@ -90,7 +90,7 @@ angular.module('gitCloneApp')
 
         var u = svg.selectAll(".dot")
             .data(lineData);
-        var t = svg.selectAll(".text")
+        var t = svg.selectAll(".label")
             .data(lineData);
 
         u
@@ -103,20 +103,17 @@ angular.module('gitCloneApp')
                 .attr("cy", function(d) { return y(d.count) })
                 .attr("r", 5);
 
-        // t
-        //     .enter()
-        //     .append("text")
-        //     .merge(t)
-        //     .transition()
-        //     .duration(750)
-        //     .attr("class", "label")
-        //         .attr("x", function(d, i) { return x(d.date) })
-        //         .attr("y", function(d) { return y(d.count) })
-        //         .attr("dy", "-5")
-        //         .text(function(d) {return d.count; });
-
-        // t.exit().remove();
-
+        t
+            .enter()
+            .append("text")
+            .merge(t)
+            .transition()
+            .duration(750)
+            .attr("class", "label")
+                .attr("x", function(d, i) { return x(d.date) })
+                .attr("y", function(d) { return y(d.count) })
+                .attr("dy", "-5")
+                .text(function(d) {return d.count; });
     }
 
     scope.generateLineGraph = function(lineData) {
