@@ -55,7 +55,7 @@ class GETCloneView(ListAPIView):
         # check and see if date exists in array
         # if not, put in output
         for i in range(0,14):
-            date_upper_bound = timezone.now().date() + timezone.timedelta(days=1)
+            date_upper_bound = self.get_date() + timezone.timedelta(days=1)
             date = date_upper_bound - timezone.timedelta(days=i)
 
             # if clone is not empty, then go through the following process
@@ -88,6 +88,8 @@ class POSTCloneView(CreateAPIView):
 
     def perform_create(self, serializer):
         today = self.get_date()
+
+        print(today)
 
         try:
             clone = self.model.objects.get(date=today)
