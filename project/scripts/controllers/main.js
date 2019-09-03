@@ -93,6 +93,18 @@ angular.module('gitCloneApp')
         var t = svg.selectAll(".label")
             .data(lineData);
 
+        var l = svg.selectAll(".line")
+            .data([lineData]);
+
+        l
+            .enter()
+            .append("path")
+            .attr("class","line")
+            .merge(l)
+            .transition()
+            .duration(750)
+            .attr("d", valueline)
+
         u
             .enter()
             .append(".dot") // Add a new circle for each new elements
