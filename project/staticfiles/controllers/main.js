@@ -6,6 +6,7 @@ angular.module('gitCloneApp')
 
     scope.init = function() {
         scope.getGraph().then(res => {
+            console.log(res.data);
             scope.countTotal = scope.getCountTotal(res.data);
             let data = scope.convertDateToObject(res.data);
             scope.generateLineGraph(data);
@@ -49,11 +50,8 @@ angular.module('gitCloneApp')
     scope.convertDateToObject = function (data) {
         let output = [];
 
-        console.log(data);
-
         for (item of data) {
             // create date object
-            console.log(item.date);
             item.date = new Date(parseInt(item.date)*1000);
 
             output.push(item);
@@ -66,6 +64,16 @@ angular.module('gitCloneApp')
     scope.updateLineGraph = function(lineData) {
         var height  = 200;
         var width   = 700;
+        var hEach   = 40;
+
+        var margin = {top: 20, right: 15, bottom: 25, left: 25};
+
+        width =     width - margin.left - margin.right;
+        height =    height - margin.top - margin.bottom;
+
+        lineData.sort(function(a,b){
+            return new Date(b.date) - new Date(a.date);
+        });
 
         var valueline = d3.line()
             .x(function(d) { return x(d.date); })
@@ -78,15 +86,37 @@ angular.module('gitCloneApp')
         x.domain(d3.extent(lineData, function(d) { return d.date; }));
         y.domain([d3.min(lineData, function(d) { return d.count; }) - 5, 100]);
 
-        let svg = d3.select("#data").transition();
-        let xAxis_woy = d3.axisBottom(x).ticks(11).tickFormat(d3.timeFormat("%y-%b-%d")).tickValues(lineData.map(d=>d.date));
+        var svg = d3.select('#data')
 
-        svg.select(".line")   // change the line
+        var u = svg.selectAll(".dot")
+            .data(lineData);
+        var t = svg.selectAll(".text")
+            .data(lineData);
+
+        u
+            .enter()
+            .append(".dot") // Add a new circle for each new elements
+            .merge(u) // get the already existing elements as well
+            .transition() // and apply changes to all of them
             .duration(750)
-            .attr("d", valueline(data));
-        svg.select(".x.axis") // change the x axis
-            .duration(750)
-            .call(xAxis_woy);
+                .attr("cx", function(d) { return x(d.date) })
+                .attr("cy", function(d) { return y(d.count) })
+                .attr("r", 5);
+
+        // t
+        //     .enter()
+        //     .append("text")
+        //     .merge(t)
+        //     .transition()
+        //     .duration(750)
+        //     .attr("class", "label")
+        //         .attr("x", function(d, i) { return x(d.date) })
+        //         .attr("y", function(d) { return y(d.count) })
+        //         .attr("dy", "-5")
+        //         .text(function(d) {return d.count; });
+
+        // t.exit().remove();
+
     }
 
     scope.generateLineGraph = function(lineData) {
