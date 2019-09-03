@@ -52,20 +52,14 @@ class GETCloneView(ListAPIView):
         temp_set = set()
         temp_clone_dates = [str(clone.date.date()) for clone in clones]
 
-        # check and see if date exists in array
-        # if not, put in output
         for i in range(0,14):
             date_upper_bound = self.get_date() + timezone.timedelta(days=1)
             date = date_upper_bound - timezone.timedelta(days=i)
 
-            # if clone is not empty, then go through the following process
             if len(temp_clone_dates) != 0:
-                # if date not in clone, then add
                 if str(date) not in temp_clone_dates:
                     new_clone = self.model(date=date)
                     dates.append(new_clone)
-
-            # if clone is empty, then add
             else:
                 dates.append(self.model(date=date))
 
@@ -88,8 +82,6 @@ class POSTCloneView(CreateAPIView):
 
     def perform_create(self, serializer):
         today = self.get_date()
-
-        print(today)
 
         try:
             clone = self.model.objects.get(date=today)

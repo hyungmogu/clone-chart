@@ -62,7 +62,6 @@ angular.module('gitCloneApp')
             output.push(item);
         }
 
-        console.log(output);
         return output;
     }
 
