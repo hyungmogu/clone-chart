@@ -49,14 +49,20 @@ angular.module('gitCloneApp')
 
     scope.convertDateToObject = function (data) {
         let output = [];
-
         for (item of data) {
-            // create date object
-            item.date = new Date(parseInt(item.date)*1000);
+            // convert to javascript timestamp
+            let dateRgx = item.date.match(/^(\d{4})\-(\d{1,2})\-(\d{1,2})/);
+
+            let year = parseInt(dateRgx[1]);
+            let month = parseInt(dateRgx[2]) - 1;
+            let days = parseInt(dateRgx[3]);
+
+            item.date = new Date(year, month, days);
 
             output.push(item);
         }
 
+        console.log(output);
         return output;
     }
 
