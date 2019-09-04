@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db.models import Q
-from django.utils import timezone,formats
+import pytz
 from datetime import datetime
+from django.db.models import Q
+from django.conf import settings
+from django.utils import timezone,formats
 from django.views.generic import TemplateView
 from rest_framework import permissions, status
 from rest_framework.exceptions import NotAcceptable
@@ -42,37 +44,40 @@ class GETCloneView(ListAPIView):
         fourteen_days_ago = date_upper_bound - fourteen_days
 
         clones = models.Clone.objects.filter(
-            Q(date__lte=date_upper_bound)&
-            Q(date__gte=fourteen_days_ago))
+            date__gte=fourteen_days_ago,
+            date__lte=date_upper_bound)
 
         return clones
 
     def init_clones(self, clones):
         dates = []
         temp_set = set()
-        temp_clone_dates = [str(clone.date.date()) for clone in clones]
+        temp_clone_dates = ['{}-{}-{}'.format(clone.date.year, clone.date.month, clone.date.day) for clone in clones]
 
         for i in range(0,14):
             date_upper_bound = self.get_date() + timezone.timedelta(days=1)
-            date = date_upper_bound - timezone.timedelta(days=i)
+            datetime = date_upper_bound - timezone.timedelta(days=i)
+            date = '{}-{}-{}'.format(datetime.year, datetime.month, datetime.day)
 
             if len(temp_clone_dates) != 0:
                 if str(date) not in temp_clone_dates:
-                    new_clone = self.model(date=date)
+                    new_clone = self.model(date=datetime)
                     dates.append(new_clone)
             else:
-                dates.append(self.model(date=date))
+                dates.append(self.model(date=datetime))
 
         self.model.objects.bulk_create(dates)
 
     def get_date(self):
+        tz = pytz.timezone(settings.TIME_ZONE)
+
         today_with_time = timezone.now().today()
 
         today_year = today_with_time.year
         today_month = today_with_time.month
         today_day = today_with_time.day
 
-        return datetime(today_year, today_month, today_day)
+        return tz.localize(datetime(today_year, today_month, today_day))
 
 
 class POSTCloneView(CreateAPIView):
@@ -97,10 +102,13 @@ class POSTCloneView(CreateAPIView):
 
 
     def get_date(self):
+        tz = pytz.timezone(settings.TIME_ZONE)
+
         today_with_time = timezone.now().today()
 
         today_year = today_with_time.year
         today_month = today_with_time.month
         today_day = today_with_time.day
 
-        return datetime(today_year, today_month, today_day)
+        return tz.localize(datetime(today_year, today_month, today_day))
+

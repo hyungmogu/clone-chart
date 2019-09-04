@@ -6,7 +6,6 @@ angular.module('gitCloneApp')
 
     scope.init = function() {
         scope.getGraph().then(res => {
-
             scope.countTotal = scope.getCountTotal(res.data);
             let data = scope.convertDateToObject(res.data);
             scope.generateLineGraph(data);
